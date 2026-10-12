@@ -1,56 +1,129 @@
-# Welcome to your Expo app 👋
+# Preditor de Redes
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo mobile em desenvolvimento acadêmico, voltado ao monitoramento de redes e à identificação de possíveis sinais de degradação ou indisponibilidade por meio de medições ICMP.
 
-## Get started
+O projeto integra conhecimentos de desenvolvimento mobile, redes de computadores e análise e projeto de sistemas, com o objetivo de construir uma aplicação organizada, documentada e preparada para evoluir ao longo das etapas de desenvolvimento.
 
-1. Install dependencies
+> **Status:** Em desenvolvimento.
 
-   ```bash
-   npm install
-   ```
+## Objetivos do projeto
 
-2. Start the app
+- Apresentar informações relacionadas ao monitoramento de hosts na rede.
+- Trabalhar com medições ICMP para identificar possíveis sinais de degradação ou indisponibilidade.
+- Organizar e apresentar informações de monitoramento por meio de uma interface mobile.
+- Evoluir a aplicação de forma incremental, seguindo a documentação e os requisitos definidos para o projeto.
 
-   ```bash
-   npx expo start
-   ```
+## Tecnologias
 
-In the output, you'll find options to open the app in a
+- **React Native:** desenvolvimento da interface mobile.
+- **Expo:** ferramentas e ambiente de desenvolvimento da aplicação.
+- **TypeScript:** tipagem estática e organização do código.
+- **Expo Router:** estruturação das rotas e navegação entre telas.
+- **Git e GitHub:** versionamento do código e colaboração entre os integrantes da equipe.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Estrutura atual do projeto
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+PreditorDeRedes/
+├── src/
+│   ├── app/
+│   │   ├── _layout.tsx
+│   │   ├── index.tsx
+│   │   ├── hosts.tsx
+│   │   └── historico.tsx
+│   ├── components/
+│   │   ├── test/
+│   │   │   └── TextComponent.tsx
+│   │   ├── hostCard.tsx
+│   │   ├── metricCard.tsx
+│   │   └── statusBadge.tsx
+│   ├── screens/
+│   │   └── VisaoGeral.tsx
+│   └── global.css
+├── assets/
+├── scripts/
+├── app.json
+├── package.json
+└── README.md
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Organização do código
 
-### Other setup steps
+- **`src/app/`**: contém os arquivos de rota reconhecidos pelo Expo Router.
+- **`src/app/_layout.tsx`**: configura a estrutura compartilhada de navegação.
+- **`src/app/index.tsx`**: representa a rota inicial do aplicativo.
+- **`src/screens/`**: destinada às telas completas da aplicação, como a Visão Geral.
+- **`src/components/`**: destinada aos componentes visuais reutilizáveis.
+- **`assets/`**: reúne recursos estáticos utilizados pela aplicação.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+A estrutura representa o estágio inicial de organização do código. A implementação e a integração dos componentes e das telas serão evoluídas ao longo do desenvolvimento.
 
-## Learn more
+## Configuração do ambiente
 
-To learn more about developing your project with Expo, look at the following resources:
+### Pré-requisitos
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Node.js em uma versão compatível com a versão do Expo utilizada pelo projeto.
+- npm, instalado junto com o Node.js.
+- Git.
+- Um editor de código, como o Visual Studio Code.
 
-## Join the community
+### Instalação
 
-Join our community of developers creating universal apps.
+Clone o repositório e entre na pasta do projeto:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+git clone https://github.com/PedroNov4es/PreditorDeRedes
+cd PreditorDeRedes
+```
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+### Execução
+
+Inicie o servidor de desenvolvimento do Expo:
+
+```bash
+npx expo start
+```
+
+Siga as instruções exibidas no terminal para abrir o aplicativo no ambiente de execução disponível.
+
+## Funcionalidades planejadas
+
+As funcionalidades serão implementadas de forma incremental, conforme os requisitos e o planejamento do projeto.
+
+- [ ] Estruturar e evoluir a tela de Visão Geral.
+- [ ] Desenvolver a apresentação dos hosts monitorados.
+- [ ] Implementar a exibição de métricas e indicadores de estado.
+- [ ] Desenvolver a consulta ao histórico de medições.
+- [ ] Integrar a aplicação mobile à API do projeto.
+- [ ] Apresentar informações de monitoramento e possíveis sinais de degradação da rede.
+
+A lista representa objetivos de desenvolvimento, não funcionalidades já concluídas.
+
+## Documentação
+
+A documentação técnica e acadêmica do projeto orienta o planejamento, as decisões de arquitetura e a evolução da aplicação. Os documentos devem ser consultados pela equipe durante o desenvolvimento e atualizados conforme as decisões e entregas forem consolidadas.
+
+## Colaboração
+
+O projeto utiliza Git e GitHub para o controle de versão e a colaboração entre os integrantes da equipe.
+
+Antes de contribuir:
+
+1. Atualize sua cópia local do repositório.
+2. Confira a branch em que está trabalhando.
+3. Faça alterações relacionadas à tarefa atribuída.
+4. Revise as modificações antes de registrá-las.
+5. Utilize commits com mensagens claras.
+6. Compartilhe as alterações com a equipe por meio do fluxo de versionamento adotado pelo projeto.
+
+## Status do desenvolvimento
+
+O projeto encontra-se na fase inicial de estruturação do aplicativo mobile. A organização das pastas, das rotas e dos componentes constitui a base para as próximas etapas de implementação.
+
+Este README será atualizado à medida que novas funcionalidades forem desenvolvidas, testadas e integradas ao projeto.
