@@ -1,129 +1,83 @@
-# Preditor de Redes
+# Preditor de Redes (Sentinela de Redes)
 
-Aplicativo mobile em desenvolvimento acadêmico, voltado ao monitoramento de redes e à identificação de possíveis sinais de degradação ou indisponibilidade por meio de medições ICMP.
+Aplicativo mobile do Projeto Integrador **Preditor de Falhas na Rede** (Centro Universitário Braz Cubas).
+Ele consome a **Connectivity Forecast API** e mostra, em linguagem simples e com acessibilidade, a qualidade
+de conexão **prevista** para a região e o horário que o usuário escolher.
 
-O projeto integra conhecimentos de desenvolvimento mobile, redes de computadores e análise e projeto de sistemas, com o objetivo de construir uma aplicação organizada, documentada e preparada para evoluir ao longo das etapas de desenvolvimento.
+> **Status:** telas P01, P02 e P03 implementadas. Falta validar em dispositivo real com TalkBack/VoiceOver (ver `docs/ACESSIBILIDADE.md`).
 
-> **Status:** Em desenvolvimento.
+## Telas (protótipos do Documento de Visão)
 
-## Objetivos do projeto
+| Tela | Rota | Requisitos |
+|---|---|---|
+| P01 – Previsão (inicial) | `/` | RQ01, RQ02, RQ04, RNF03, RNF13 |
+| P02 – Detalhes da previsão | `/detalhes` | RNF03, RNF07 |
+| P03 – Previsão por atividade | `/atividade` | RQ03, RQ04 |
 
-- Apresentar informações relacionadas ao monitoramento de hosts na rede.
-- Trabalhar com medições ICMP para identificar possíveis sinais de degradação ou indisponibilidade.
-- Organizar e apresentar informações de monitoramento por meio de uma interface mobile.
-- Evoluir a aplicação de forma incremental, seguindo a documentação e os requisitos definidos para o projeto.
+Sem cadastro, login, rastreamento nem GPS (RNF10): o usuário escolhe a região na lista.
 
-## Tecnologias
-
-- **React Native:** desenvolvimento da interface mobile.
-- **Expo:** ferramentas e ambiente de desenvolvimento da aplicação.
-- **TypeScript:** tipagem estática e organização do código.
-- **Expo Router:** estruturação das rotas e navegação entre telas.
-- **Git e GitHub:** versionamento do código e colaboração entre os integrantes da equipe.
-
-## Estrutura atual do projeto
-
-```text
-PreditorDeRedes/
-├── src/
-│   ├── app/
-│   │   ├── _layout.tsx
-│   │   ├── index.tsx
-│   │   ├── hosts.tsx
-│   │   └── historico.tsx
-│   ├── components/
-│   │   ├── test/
-│   │   │   └── TextComponent.tsx
-│   │   ├── hostCard.tsx
-│   │   ├── metricCard.tsx
-│   │   └── statusBadge.tsx
-│   ├── screens/
-│   │   └── VisaoGeral.tsx
-│   └── global.css
-├── assets/
-├── scripts/
-├── app.json
-├── package.json
-└── README.md
-```
-
-### Organização do código
-
-- **`src/app/`**: contém os arquivos de rota reconhecidos pelo Expo Router.
-- **`src/app/_layout.tsx`**: configura a estrutura compartilhada de navegação.
-- **`src/app/index.tsx`**: representa a rota inicial do aplicativo.
-- **`src/screens/`**: destinada às telas completas da aplicação, como a Visão Geral.
-- **`src/components/`**: destinada aos componentes visuais reutilizáveis.
-- **`assets/`**: reúne recursos estáticos utilizados pela aplicação.
-
-A estrutura representa o estágio inicial de organização do código. A implementação e a integração dos componentes e das telas serão evoluídas ao longo do desenvolvimento.
-
-## Configuração do ambiente
-
-### Pré-requisitos
-
-- Node.js em uma versão compatível com a versão do Expo utilizada pelo projeto.
-- npm, instalado junto com o Node.js.
-- Git.
-- Um editor de código, como o Visual Studio Code.
-
-### Instalação
-
-Clone o repositório e entre na pasta do projeto:
-
-```bash
-git clone https://github.com/PedroNov4es/PreditorDeRedes
-cd PreditorDeRedes
-```
-
-Instale as dependências:
+## Como rodar
 
 ```bash
 npm install
-```
-
-### Execução
-
-Inicie o servidor de desenvolvimento do Expo:
-
-```bash
+cp .env.example .env     # ajuste EXPO_PUBLIC_API_URL
 npx expo start
 ```
 
-Siga as instruções exibidas no terminal para abrir o aplicativo no ambiente de execução disponível.
+- **Com a API Java** (`trabalho-api-java`): `mvn spring-boot:run` e aponte `EXPO_PUBLIC_API_URL`
+  (emulador Android `http://10.0.2.2:8080`; celular físico `http://IP-DA-MÁQUINA:8080`).
+- **Sem a API** (mitigação do risco R07): coloque `EXPO_PUBLIC_USE_MOCK=true` no `.env` e reinicie com `npx expo start -c`.
 
-## Funcionalidades planejadas
+Outros comandos: `npm run typecheck`, `npm run lint`, `npm test` (testes da lógica).
 
-As funcionalidades serão implementadas de forma incremental, conforme os requisitos e o planejamento do projeto.
+## Endpoints usados
 
-- [ ] Estruturar e evoluir a tela de Visão Geral.
-- [ ] Desenvolver a apresentação dos hosts monitorados.
-- [ ] Implementar a exibição de métricas e indicadores de estado.
-- [ ] Desenvolver a consulta ao histórico de medições.
-- [ ] Integrar a aplicação mobile à API do projeto.
-- [ ] Apresentar informações de monitoramento e possíveis sinais de degradação da rede.
+| Uso | Endpoint |
+|---|---|
+| Regiões | `GET /api/v1/locations` |
+| Previsão atual (RQ01) | `GET /api/v1/forecasts/probes/{id}?model_id=` |
+| Períodos futuros (RQ02, RQ04) | `GET /api/v1/forecasts/probes/{id}/timeline?model_id=&limit=` |
+| Comparar modelos (P02) | `GET /api/v1/forecasts/probes/{id}/compare?prediction_for=` |
+| Atividade adequada (RQ03) | `POST /api/v1/activity/check` |
 
-A lista representa objetivos de desenvolvimento, não funcionalidades já concluídas.
+## Estrutura
 
-## Documentação
+```text
+src/
+├── app/            rotas do Expo Router (finas): index, detalhes, atividade
+├── screens/        PrevisaoScreen (P01), DetalhesScreen (P02), AtividadeScreen (P03)
+├── components/     AppButton, ChoiceButton, StatusBadge, MetricCard, PeriodList, StateViews...
+├── domain/         qualidade (Boa/Regular/Instável), atividades, glossário, regiões
+├── lib/            ringBuffer (fila circular), aggregate (agregação), format
+├── services/       api (fetch + erros), mock (dados simulados), errors
+├── hooks/          useRequest, useRegions
+├── state/          SelectionContext (região, período e consultas recentes)
+├── types/          tipos dos DTOs da API
+└── theme.ts        cores (contrastes verificados) e área mínima de toque
+tests/              testes da lógica (node:test)
+docs/               acessibilidade, estruturas de dados
+```
 
-A documentação técnica e acadêmica do projeto orienta o planejamento, as decisões de arquitetura e a evolução da aplicação. Os documentos devem ser consultados pela equipe durante o desenvolvimento e atualizados conforme as decisões e entregas forem consolidadas.
+## Decisões
+
+- **3 níveis de qualidade.** A API devolve `GOOD`, `MODERATE`, `UNSTABLE`; o app exibe **Boa, Regular, Instável**.
+  A classificação é feita pela API (RTT 60/150 ms; perda 1/5 %). O app só traduz.
+- **Atividades** são as da API: videochamada, chamada de áudio, streaming, envio de arquivos, navegação e mensagens.
+- **Jitter**: a API prevê apenas RTT e perda. O app explica o jitter (RNF07) mas não inventa um valor.
+- **Adequada / Com ressalvas / Não recomendada**: adequada quando a qualidade atende ao mínimo da atividade;
+  "com ressalvas" um nível abaixo; "não recomendada" abaixo disso.
+- Os dados da fixture da API são de 20/08/2026; o "período atual" é o mais próximo disponível.
+
+## Estruturas de Dados (disciplina de ED)
+
+Detalhes em [`docs/ESTRUTURAS_DE_DADOS.md`](docs/ESTRUTURAS_DE_DADOS.md): fila circular (`RingBuffer`),
+lista de registros tipados (`TimelineItem`) e estruturas de agregação (`summarize`, `bestWindow`, `bestPeriodFor`).
 
 ## Colaboração
 
-O projeto utiliza Git e GitHub para o controle de versão e a colaboração entre os integrantes da equipe.
+Git e GitHub. Atualize a cópia local, confira a branch, faça alterações da sua tarefa, revise antes do commit
+e use mensagens claras.
 
-Antes de contribuir:
+## Redes de Computadores
 
-1. Atualize sua cópia local do repositório.
-2. Confira a branch em que está trabalhando.
-3. Faça alterações relacionadas à tarefa atribuída.
-4. Revise as modificações antes de registrá-las.
-5. Utilize commits com mensagens claras.
-6. Compartilhe as alterações com a equipe por meio do fluxo de versionamento adotado pelo projeto.
-
-## Status do desenvolvimento
-
-O projeto encontra-se na fase inicial de estruturação do aplicativo mobile. A organização das pastas, das rotas e dos componentes constitui a base para as próximas etapas de implementação.
-
-Este README será atualizado à medida que novas funcionalidades forem desenvolvidas, testadas e integradas ao projeto.
+O coletor ICMP em Python, o guia do Packet Tracer e o roteiro do vídeo ficam em [`redes/`](redes/README.md).
