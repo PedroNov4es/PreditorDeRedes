@@ -15,18 +15,20 @@ interface Props {
   thresholds: Thresholds;
   /** Explicação em linguagem simples (RNF07), vinda do glossário. */
   explanation: string;
+  /** Observação opcional (ex.: comparação com a média do dia). */
+  note?: string;
 }
 
 /**
  * Indicador com faixa de zonas (Boa / Regular / Instável) e marcador na posição do valor.
  * O nível aparece também em texto e símbolo, nunca só pela cor (RNF03).
  */
-export function MetricGauge({ title, valueText, unit, value, max, thresholds, explanation }: Props) {
+export function MetricGauge({ title, valueText, unit, value, max, thresholds, explanation, note }: Props) {
   const level = levelFor(value, thresholds);
   const info = QUALITY_INFO[level];
   const zones = zoneFlex(thresholds, max);
   const percent = markerPercent(value, max);
-  const spoken = `${title}: ${valueText} ${unit}, nível ${info.label}. ${explanation}`;
+  const spoken = `${title}: ${valueText} ${unit}, nível ${info.label}. ${explanation}${note ? ` ${note}` : ''}`;
 
   return (
     <View accessible accessibilityLabel={spoken} style={styles.card}>
@@ -46,6 +48,7 @@ export function MetricGauge({ title, valueText, unit, value, max, thresholds, ex
       </View>
       <Text style={styles.hint}>{`Boa abaixo de ${thresholds.moderate} ${unit}`}</Text>
       <Text style={styles.explanation}>{explanation}</Text>
+      {note ? <Text style={styles.note}>{note}</Text> : null}
     </View>
   );
 }
@@ -95,4 +98,5 @@ const styles = StyleSheet.create({
   },
   hint: { fontSize: 13, color: colors.textMuted },
   explanation: { fontSize: 14, lineHeight: 20, color: colors.text },
+  note: { fontSize: 13, lineHeight: 18, color: colors.textMuted },
 });
