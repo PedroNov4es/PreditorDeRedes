@@ -134,7 +134,7 @@ export function DetalhesScreen() {
                     style={[styles.row, isSelected && styles.rowSelected]}
                   >
                     <Text style={[styles.rowText, isSelected && styles.rowTextSelected]}>
-                      {`${isSelected ? '▶ ' : ''}${formatHour(item.predictionFor)} · ${info.symbol} ${info.label} · ${formatNumber(item.predictedAvgRttMs)} ms · ${formatNumber(item.predictedPacketLossPct)}%`}
+                      {`${isSelected ? '▶ ' : ''}${formatHour(item.predictionFor)} · ${info.symbol}\u00A0${info.label} · ${formatNumber(item.predictedAvgRttMs)} ms · ${formatNumber(item.predictedPacketLossPct)}%`}
                     </Text>
                     <View
                       accessibilityElementsHidden
