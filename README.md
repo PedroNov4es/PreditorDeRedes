@@ -4,7 +4,8 @@ Aplicativo mobile do Projeto Integrador **Preditor de Falhas na Rede** (Centro U
 Ele consome a **Connectivity Forecast API** e mostra, em linguagem simples e com acessibilidade, a qualidade
 de conexão **prevista** para a região e o horário que o usuário escolher.
 
-> **Status:** telas P01, P02 e P03 implementadas. Falta validar em dispositivo real com TalkBack/VoiceOver (ver `docs/ACESSIBILIDADE.md`).
+> **Status:** telas P01, P02 e P03 implementadas e com o visual redesenhado (PR #3). Testado no navegador; falta validar em
+> dispositivo real com TalkBack/VoiceOver e fonte grande (ver `docs/ACESSIBILIDADE.md`).
 
 ## Telas (protótipos do Documento de Visão)
 
@@ -18,17 +19,44 @@ Sem cadastro, login, rastreamento nem GPS (RNF10): o usuário escolhe a região 
 
 ## Como rodar
 
+Pré-requisitos: **Node.js** (LTS) e, para usar a API real, **JDK 17** e **Maven 3.9+**.
+
 ```bash
 npm install
-cp .env.example .env     # ajuste EXPO_PUBLIC_API_URL
-npx expo start
+cp .env.example .env     # no PowerShell: Copy-Item .env.example .env
+npx expo start -c
 ```
 
-- **Com a API Java** (`trabalho-api-java`): `mvn spring-boot:run` e aponte `EXPO_PUBLIC_API_URL`
-  (emulador Android `http://10.0.2.2:8080`; celular físico `http://IP-DA-MÁQUINA:8080`).
-- **Sem a API** (mitigação do risco R07): coloque `EXPO_PUBLIC_USE_MOCK=true` no `.env` e reinicie com `npx expo start -c`.
+O `-c` limpa o cache. É necessário sempre que o `.env` mudar, porque as variáveis `EXPO_PUBLIC_*` são gravadas no
+app na hora do empacotamento (bundle).
 
-Outros comandos: `npm run typecheck`, `npm run lint`, `npm test` (testes da lógica).
+### Opção A: sem a API (mais simples, mitigação do risco R07)
+
+No `.env`, use `EXPO_PUBLIC_USE_MOCK=true` e reinicie com `npx expo start -c`. O app mostra um aviso visível de que os
+dados são simulados.
+
+### Opção B: com a API Java (`trabalho-api-java`)
+
+1. Em outro terminal, na pasta da API: `mvn spring-boot:run` (sobe em `http://localhost:8080`).
+2. No `.env`, ajuste `EXPO_PUBLIC_API_URL` conforme **onde o app roda**:
+
+| Onde o app roda | `EXPO_PUBLIC_API_URL` |
+|---|---|
+| Navegador do computador (`w` no Expo) | `http://localhost:8080` |
+| Emulador Android | `http://10.0.2.2:8080` |
+| Simulador iOS | `http://localhost:8080` |
+| Celular físico (Expo Go) | `http://IP-DO-COMPUTADOR:8080` (mesmo Wi-Fi) |
+
+`10.0.2.2` só funciona dentro do emulador Android; no navegador use `localhost`.
+
+### Testar no celular
+
+1. Instale o **Expo Go** no aparelho (Android ou iOS) e conecte-o ao **mesmo Wi-Fi** do computador.
+2. Rode `npx expo start -c` e leia o QR code (Android: dentro do Expo Go; iOS: pela câmera).
+3. Sem API, use a Opção A. Com API, a Opção B com o IP do computador.
+4. Roteiro do que conferir: `docs/ACESSIBILIDADE.md`.
+
+Outros comandos: `npm run typecheck`, `npm run lint`, `npm test` (12 testes da lógica).
 
 ## Endpoints usados
 
@@ -46,9 +74,10 @@ Outros comandos: `npm run typecheck`, `npm run lint`, `npm test` (testes da lóg
 src/
 ├── app/            rotas do Expo Router (finas): index, detalhes, atividade
 ├── screens/        PrevisaoScreen (P01), DetalhesScreen (P02), AtividadeScreen (P03)
-├── components/     AppButton, ChoiceButton, StatusBadge, MetricCard, PeriodList, StateViews...
-├── domain/         qualidade (Boa/Regular/Instável), atividades, glossário, regiões
-├── lib/            ringBuffer (fila circular), aggregate (agregação), format
+├── components/     Screen/ScreenHeader, HeroCard, ScoreMeter, MetricGauge, QualityScale, PeriodStrip,
+│                   BestWindowCard, RegionSelect/RegionPicker, StatusBadge, StateViews, Skeleton, DemoNotice...
+├── domain/         qualidade e limiares (Boa/Regular/Instável), atividades, glossário, regiões
+├── lib/            ringBuffer (fila circular), aggregate (agregação), format, gauge, navigation
 ├── services/       api (fetch + erros), mock (dados simulados), errors
 ├── hooks/          useRequest, useRegions
 ├── state/          SelectionContext (região, período e consultas recentes)
