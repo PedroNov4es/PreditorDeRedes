@@ -48,3 +48,10 @@ claude/
 
 #scripts
 #/scripts
+# env local
+.env
+
+__pycache__/
+*.db
+*.db-wal
+*.db-shm

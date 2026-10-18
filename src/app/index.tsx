@@ -1,7 +1,5 @@
-import VisaoGeral from "../screens/VisaoGeral";
+import { PrevisaoScreen } from '../screens/PrevisaoScreen';
 
-export default function HomeScreen() {
-  return (
-     <VisaoGeral/>
-  );
+export default function Index() {
+  return <PrevisaoScreen />;
 }
