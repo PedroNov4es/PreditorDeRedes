@@ -1,24 +1,36 @@
 import { useEffect, useState } from 'react';
-import { AccessibilityInfo, View } from 'react-native';
-import { router } from 'expo-router';
+import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { ChoiceButton } from '../components/ChoiceButton';
 import { EstimateNotice } from '../components/EstimateNotice';
+import { HeroCard } from '../components/HeroCard';
+import { MetricGauge } from '../components/MetricGauge';
 import { Screen } from '../components/Screen';
+import { ScreenHeader } from '../components/ScreenHeader';
 import { Card, Section } from '../components/Section';
 import { ErrorState, LoadingState } from '../components/StateViews';
 import { SuitabilityBadge } from '../components/StatusBadge';
-import { Body, Caption, Heading } from '../components/Typography';
+import { Body, Caption } from '../components/Typography';
 import { TIMELINE_LIMIT } from '../config';
-import { ACTIVITIES, ACTIVITY_LABEL, QUALITY_INFO, SUITABILITY_INFO, suitabilityFor } from '../domain/quality';
+import { GLOSSARY } from '../domain/glossary';
+import {
+  ACTIVITIES,
+  ACTIVITY_LABEL,
+  LOSS_THRESHOLDS,
+  QUALITY_INFO,
+  RTT_THRESHOLDS,
+  SUITABILITY_INFO,
+  suitabilityFor,
+} from '../domain/quality';
 import { regionName } from '../domain/regions';
 import { useRegions } from '../hooks/useRegions';
 import { useRequest } from '../hooks/useRequest';
 import { bestPeriodFor } from '../lib/aggregate';
 import { formatNumber, formatPeriod } from '../lib/format';
 import { checkActivity, getTimeline } from '../services/api';
+import { goBackOrHome } from '../lib/navigation';
 import { useSelection } from '../state/SelectionContext';
-import { spacing } from '../theme';
+import { colors, radius, spacing } from '../theme';
 import type { Activity } from '../types/api';
 
 /** P03 — Previsão por atividade (RQ03, RQ04). */
@@ -58,10 +70,19 @@ export function AtividadeScreen() {
 
   if (!selectedTime) {
     return (
-      <Screen>
-        <Heading>Previsão por atividade</Heading>
-        <Body>Escolha primeiro uma região e um período na tela de previsão.</Body>
-        <AppButton title="Escolher período" onPress={() => router.back()} />
+      <Screen
+        header={
+          <ScreenHeader
+            eyebrow="PREVISÃO POR ATIVIDADE"
+            title="O que você quer fazer?"
+            subtitle="Para ver se uma atividade funciona, escolha antes uma região e um período."
+          />
+        }
+      >
+        <Card>
+          <Body>Escolha primeiro uma região e um período na tela de previsão.</Body>
+          <AppButton title="Escolher período" onPress={goBackOrHome} />
+        </Card>
       </Screen>
     );
   }
@@ -72,18 +93,24 @@ export function AtividadeScreen() {
       : null;
 
   return (
-    <Screen>
-      <Heading>O que você quer fazer?</Heading>
-      <Body>{`${regionName(probeId)} · ${formatPeriod(selectedTime)}`}</Body>
+    <Screen
+      header={
+        <ScreenHeader
+          eyebrow="PREVISÃO POR ATIVIDADE"
+          title="O que você quer fazer?"
+          subtitle={`${regionName(probeId)} · ${formatPeriod(selectedTime)}`}
+        />
+      }
+    >
       <AppButton
         title="Alterar horário"
         variant="secondary"
-        onPress={() => router.back()}
+        onPress={goBackOrHome}
         hint="Volta para a lista de períodos"
       />
 
       <Section title="Atividade">
-        <View accessibilityRole="radiogroup" style={{ gap: spacing.sm }}>
+        <View accessibilityRole="radiogroup" style={styles.choices}>
           {ACTIVITIES.map((item) => (
             <ChoiceButton
               key={item}
@@ -104,31 +131,70 @@ export function AtividadeScreen() {
 
       {check.data && suitability && activity ? (
         <Section title="Resultado">
-          <Card>
+          <HeroCard accent={SUITABILITY_INFO[suitability].fg}>
+            <Text style={styles.activityName}>{ACTIVITY_LABEL[activity]}</Text>
             <SuitabilityBadge suitability={suitability} large />
             <Body>{check.data.recommendation.message}</Body>
-            <Caption>
-              {`Qualidade prevista: ${QUALITY_INFO[check.data.forecast.quality].label} · Latência ${formatNumber(check.data.forecast.predictedAvgRttMs)} ms · Perda ${formatNumber(check.data.forecast.predictedPacketLossPct)}%`}
-            </Caption>
+            <Caption>{`Qualidade prevista para este horário: ${QUALITY_INFO[check.data.forecast.quality].label}.`}</Caption>
+            <View style={styles.metrics}>
+              <MetricGauge
+                title="Latência prevista"
+                valueText={formatNumber(check.data.forecast.predictedAvgRttMs)}
+                unit="ms"
+                value={check.data.forecast.predictedAvgRttMs}
+                max={RTT_SCALE_MAX_MS}
+                thresholds={RTT_THRESHOLDS}
+                explanation={GLOSSARY.latencia}
+              />
+              <MetricGauge
+                title="Perda de pacotes prevista"
+                valueText={formatNumber(check.data.forecast.predictedPacketLossPct)}
+                unit="%"
+                value={check.data.forecast.predictedPacketLossPct}
+                max={LOSS_SCALE_MAX_PCT}
+                thresholds={LOSS_THRESHOLDS}
+                explanation={GLOSSARY.perda}
+              />
+            </View>
             {best && best.predictionFor !== selectedTime ? (
-              <>
+              <View style={styles.suggestion}>
+                <Text style={styles.suggestionTitle}>Melhor horário para esta atividade</Text>
                 <Body>
-                  {`Melhor horário previsto para esta atividade: ${formatPeriod(best.predictionFor)} (${QUALITY_INFO[best.quality].label}).`}
+                  {`${formatPeriod(best.predictionFor)} (${QUALITY_INFO[best.quality].label}).`}
                 </Body>
                 <AppButton
                   title="Usar este horário"
                   variant="secondary"
                   onPress={() => selectTime(best.predictionFor)}
                 />
-              </>
+              </View>
             ) : null}
             {suitability !== 'ADEQUATE' && !best ? (
               <Body>Nenhum dos períodos de hoje atende bem a esta atividade.</Body>
             ) : null}
             <EstimateNotice extra={check.data.metadata.disclaimer} />
-          </Card>
+          </HeroCard>
         </Section>
       ) : null}
     </Screen>
   );
 }
+
+/** Fim das escalas dos indicadores (mesmas da tela de previsão). */
+const RTT_SCALE_MAX_MS = 200;
+const LOSS_SCALE_MAX_PCT = 8;
+
+const styles = StyleSheet.create({
+  choices: { gap: spacing.sm },
+  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  activityName: { fontSize: 16, fontWeight: '700', color: colors.textMuted },
+  suggestion: {
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    backgroundColor: colors.selectedBg,
+  },
+  suggestionTitle: { fontSize: 14, fontWeight: '700', color: colors.textMuted },
+});
