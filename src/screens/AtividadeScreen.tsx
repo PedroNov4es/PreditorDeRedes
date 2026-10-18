@@ -29,17 +29,23 @@ export function AtividadeScreen() {
   const region = regionsRequest.regions.find((r) => r.probeId === probeId) ?? null;
   const timeline = useRequest(() => getTimeline(probeId, modelId, TIMELINE_LIMIT), [probeId, modelId]);
 
-  const ready = activity !== null && selectedTime !== null && region !== null;
+  // Extraímos latitude/longitude ANTES do hook, com `?.` (seguro quando region é null).
+  // Ler `region!.latitude` dentro da função fazia o React Compiler acessar a propriedade
+  // durante a renderização, quando as regiões ainda não tinham carregado (region === null).
+  const latitude = region?.latitude;
+  const longitude = region?.longitude;
+
+  const ready = activity !== null && selectedTime !== null && latitude !== undefined && longitude !== undefined;
   const check = useRequest(
     () =>
       checkActivity({
         modelId,
-        latitude: region!.latitude,
-        longitude: region!.longitude,
+        latitude: latitude!,
+        longitude: longitude!,
         dateTime: selectedTime!,
         activity: activity!,
       }),
-    [modelId, region, selectedTime, activity],
+    [modelId, latitude, longitude, selectedTime, activity],
     ready,
   );
 
