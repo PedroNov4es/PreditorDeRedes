@@ -33,12 +33,15 @@ export function PrevisaoScreen() {
   const name = regionName(probeId);
 
   // Período inicial: o instante "atual" da previsão, ou o primeiro da lista.
+  // Espera a previsão atual terminar (com sucesso ou erro) antes de escolher: se a lista
+  // chegasse primeiro, o app escolhia o 1º item e nunca corrigia para o período atual.
   useEffect(() => {
     if (!items || items.length === 0) return;
+    if (forecast.loading) return;
     if (selectedTime && items.some((item) => item.predictionFor === selectedTime)) return;
     const current = forecast.data?.prediction.predictionFor;
     selectTime((items.find((item) => item.predictionFor === current) ?? items[0]).predictionFor);
-  }, [items, forecast.data, selectedTime, selectTime]);
+  }, [items, forecast.data, forecast.loading, selectedTime, selectTime]);
 
   // RNF08: comunica a atualização da previsão às tecnologias assistivas.
   useEffect(() => {
