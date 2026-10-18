@@ -110,3 +110,5 @@ e use mensagens claras.
 ## Redes de Computadores
 
 O coletor ICMP em Python, o guia do Packet Tracer e o roteiro do vídeo ficam em [`redes/`](redes/README.md).
+
+Prototipo Figma (P01, P02 e P03): https://method-syntax-64783864.figma.site/
