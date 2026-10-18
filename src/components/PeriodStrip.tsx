@@ -42,8 +42,8 @@ export function PeriodStrip({ items, selectedTime, counts }: Props) {
           ))}
         </View>
         <View style={styles.axis}>
-          <Text style={styles.axisText}>{formatPeriod(items[0].predictionFor)}</Text>
-          <Text style={styles.axisText}>{formatPeriod(items[items.length - 1].predictionFor)}</Text>
+          <Text style={[styles.axisText, styles.axisItem]}>{formatPeriod(items[0].predictionFor)}</Text>
+          <Text style={[styles.axisText, styles.axisItem]}>{formatPeriod(items[items.length - 1].predictionFor)}</Text>
         </View>
         <View style={styles.legend}>
           {ORDER.map((level) => (
@@ -72,7 +72,9 @@ const styles = StyleSheet.create({
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, height: 48 },
   bar: { flex: 1, borderRadius: 2 },
   barSelected: { borderWidth: 2, borderColor: colors.text },
-  axis: { flexDirection: 'row', justifyContent: 'space-between' },
+  // Com fonte grande (RNF05) as duas datas não cabem lado a lado: a segunda desce para a linha de baixo.
+  axis: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', columnGap: spacing.md, rowGap: 2 },
+  axisItem: { flexShrink: 1 },
   axisText: { fontSize: 13, color: colors.textMuted },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },

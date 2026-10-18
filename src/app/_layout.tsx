@@ -15,9 +15,9 @@ export default function Layout() {
           contentStyle: { backgroundColor: colors.bg },
         }}
       >
-        <Stack.Screen name="index" options={{ title: 'Previsão da conexão' }} />
-        <Stack.Screen name="detalhes" options={{ title: 'Detalhes da previsão' }} />
-        <Stack.Screen name="atividade" options={{ title: 'Previsão por atividade' }} />
+        <Stack.Screen name="index" options={{ title: 'Previsão' }} />
+        <Stack.Screen name="detalhes" options={{ title: 'Detalhes' }} />
+        <Stack.Screen name="atividade" options={{ title: 'Atividade' }} />
       </Stack>
     </SelectionProvider>
   );
