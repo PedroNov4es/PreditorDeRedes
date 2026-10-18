@@ -10,6 +10,8 @@ export interface QualityInfo {
   symbol: string;
   fg: string;
   bg: string;
+  /** Cor sólida para barras e marcadores (contraste >= 3:1 contra branco e contra a superfície). */
+  bar: string;
 }
 
 export const QUALITY_INFO: Record<Quality, QualityInfo> = {
@@ -19,6 +21,7 @@ export const QUALITY_INFO: Record<Quality, QualityInfo> = {
     symbol: '✔',
     fg: '#0B5D2A',
     bg: '#E3F4E8',
+    bar: '#1B7F4B',
   },
   MODERATE: {
     label: 'Regular',
@@ -26,6 +29,7 @@ export const QUALITY_INFO: Record<Quality, QualityInfo> = {
     symbol: '!',
     fg: '#6B4200',
     bg: '#FFF1CC',
+    bar: '#B26A00',
   },
   UNSTABLE: {
     label: 'Instável',
@@ -33,8 +37,30 @@ export const QUALITY_INFO: Record<Quality, QualityInfo> = {
     symbol: '✖',
     fg: '#9B1C1C',
     bg: '#FDE6E6',
+    bar: '#B42318',
   },
 };
+
+/** Limites de um indicador: a partir de `moderate` é Regular; a partir de `unstable`, Instável. */
+export interface Thresholds {
+  moderate: number;
+  unstable: number;
+}
+
+/**
+ * Mesmos limiares da API (QualityClassifier): RTT 60/150 ms e perda 1/5 %, ambos
+ * inclusivos (>=). São regras experimentais da API, usadas aqui só para desenhar as
+ * faixas dos indicadores. A classificação geral da previsão continua vindo da API.
+ */
+export const RTT_THRESHOLDS: Thresholds = { moderate: 60, unstable: 150 };
+export const LOSS_THRESHOLDS: Thresholds = { moderate: 1, unstable: 5 };
+
+/** Nível de UM indicador (latência ou perda) segundo seus limites. */
+export function levelFor(value: number, thresholds: Thresholds): Quality {
+  if (value >= thresholds.unstable) return 'UNSTABLE';
+  if (value >= thresholds.moderate) return 'MODERATE';
+  return 'GOOD';
+}
 
 export function qualityRank(quality: Quality): number {
   switch (quality) {

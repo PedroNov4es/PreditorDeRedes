@@ -22,7 +22,7 @@ export function PeriodList({ items, selectedTime, onSelect }: Props) {
         return (
           <ChoiceButton
             key={item.predictionFor}
-            label={`${when} — ${info.symbol} ${info.label}`}
+            label={`${when} — ${info.symbol}\u00A0${info.label}`}
             accessibilityLabel={`${when}, qualidade ${info.label}. ${detail.replace('·', ',')}`}
             selected={item.predictionFor === selectedTime}
             onPress={() => onSelect(item)}

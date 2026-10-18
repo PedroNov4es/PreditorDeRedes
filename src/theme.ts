@@ -9,6 +9,16 @@ export const colors = {
   onPrimary: '#FFFFFF',
   headerBg: '#14213D',
   onHeader: '#FFFFFF',
+  /** Texto secundário e rótulo sobre o cabeçalho escuro (contrastes >= 8,7:1). */
+  onHeaderMuted: '#C9D3E8',
+  onHeaderEyebrow: '#AFC0E3',
+  /** Controle (seletor de região) sobre o cabeçalho: fundo e borda (>= 3:1). */
+  headerControlBg: '#243556',
+  headerControlBorder: '#8FA3CC',
+  /** Faixa neutra dos indicadores (decorativa: o texto sempre repete a informação). */
+  track: '#DCE2EC',
+  warningBg: '#FFF1CC',
+  warningFg: '#6B4200',
   selectedBg: '#DCE7FF',
   danger: '#9B1C1C',
   dangerBg: '#FDE6E6',

@@ -3,7 +3,7 @@
 Objetivo: montar uma rede local com arquitetura TCP/IP que reproduza os quatro estados do preditor
 (normal, rota alterada, instável, falha) e comparar com o monitoramento real.
 
-> O arquivo `.pkt` precisa ser montado no Packet Tracer. Este guia traz topologia, endereçamento e todos os comandos.
+> O arquivo pronto está em [`packet-tracer/SentinelaDeRedes.pkt`](packet-tracer/SentinelaDeRedes.pkt) (abre no Packet Tracer 9). As configurações dos roteadores estão em `packet-tracer/R-*.txt` e os comandos dos cenários em `packet-tracer/cenarios.txt`. Este guia traz topologia, endereçamento e todos os comandos para refazer.
 
 ## 1. Topologia (SP ⇄ RJ, com desvio pela Espanha)
 
@@ -136,17 +136,28 @@ Em todos, use o PC-SP1: `ping -n 20 192.168.20.20` e `tracert 192.168.20.20`.
 | 1 | Normal | Nada | 0 % de perda, **TTL=126**, tracert com 3 saltos | ESTÁVEL |
 | 2 | Rota alterada | `interface g0/1` → `shutdown` em R-SP | OSPF reconverge pelo caminho longo; **TTL=125**, tracert com 4 saltos, sem perda após a convergência | ROTA ALTERADA |
 | 3 | Falha (queda total) | Desligar também `g0/2` de R-SP | "Request timed out" em 100 % | COM FALHA (painel vermelho) |
-| 4 | Instável (perda parcial) | Religar e desligar `g0/1` durante o ping, ou ACL abaixo | Alguns "Request timed out" intercalados | EM RISCO / COM FALHA conforme a perda |
-| 5 | Loop de roteamento | Rotas estáticas apontando uma para a outra (abaixo) | "TTL expired in transit" | falha de roteamento (TTL esgotado) |
+| 4 | Instável (perda parcial) | `shutdown` e `no shutdown` em `g0/0` do R-RJ durante um `ping -t` | Respostas TTL=126 intercaladas com "Destination host unreachable" | EM RISCO / COM FALHA conforme a perda |
+| 5 | Loop de roteamento | Rotas estáticas para uma rede inexistente (192.168.99.0/24) apontando uma para a outra (abaixo) | `tracert` alternando entre R-SP e R-RJ até 30 saltos; ping sem resposta | falha de roteamento (TTL esgotado) |
 
-ACL para perda parcial (cenário 4, em R-RJ): `access-list 101 deny icmp any any echo` e `interface g0/0` → `ip access-group 101 out`.
-Remova com `no ip access-group 101 out`.
+Perda parcial (cenário 4): no CLI do R-RJ entre em `interface g0/0`, rode `ping -t 192.168.20.20` no PC-SP1 e alterne `shutdown` / `no shutdown` (cerca de 5 s entre eles).
+Termine sempre com `no shutdown`. Não use a ACL `deny icmp any any echo`: ela bloqueia 100 % dos pings, e não uma parte deles.
 
-Loop (cenário 5), com OSPF desativado nos dois roteadores (`no router ospf 1`):
+Loop (cenário 5), com o OSPF ligado e uma rede que não existe (a rota estática para 192.168.20.0 não funciona, pois essa rede está conectada ao R-RJ e vence a estática):
 ```text
-R-SP: ip route 192.168.20.0 255.255.255.0 10.0.0.2
-R-RJ: ip route 192.168.20.0 255.255.255.0 10.0.0.1
+R-SP: ip route 192.168.99.0 255.255.255.0 10.0.0.2
+R-RJ: ip route 192.168.99.0 255.255.255.0 10.0.0.1
 ```
+No PC-SP1: `ping 192.168.99.1` e `tracert 192.168.99.1`. Limpe com `no ip route 192.168.99.0 255.255.255.0 ...` nos dois roteadores.
+
+### Resultados obtidos no simulador
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 1 | Normal | 20/20 respostas, 0 % de perda, TTL=126, 3 saltos |
+| 2 | Rota alterada | 20/20 respostas, 0 % de perda, TTL=125, 4 saltos (via 10.0.1.2 e 10.0.2.2) |
+| 3 | Queda total | 0/20 respostas, 100 % de perda, "Destination host unreachable" de 192.168.10.1 |
+| 4 | Perda parcial | 264/316 respostas, 52 perdidos (17 % de perda) |
+| 5 | Loop | ping 100 % de perda; tracert alterna entre R-SP e R-RJ até 30 saltos |
 
 > **Limite do simulador:** o Packet Tracer não modela atraso por distância nem jitter realista, então o RTT em ms varia pouco.
 > A mudança de rota aparece pelo **TTL** e pelos **saltos do tracert**. Por isso o coletor guarda o TTL de cada rajada.
