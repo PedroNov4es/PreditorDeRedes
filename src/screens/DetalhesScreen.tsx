@@ -2,22 +2,32 @@ import { StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { AppButton } from '../components/AppButton';
 import { EstimateNotice } from '../components/EstimateNotice';
+import { HeroCard } from '../components/HeroCard';
 import { MetricCard } from '../components/MetricCard';
+import { MetricGauge } from '../components/MetricGauge';
+import { QualityScale } from '../components/QualityScale';
 import { Screen } from '../components/Screen';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { ScoreMeter } from '../components/ScoreMeter';
 import { Card, Section } from '../components/Section';
 import { ErrorState, LoadingState } from '../components/StateViews';
 import { QualityBadge } from '../components/StatusBadge';
-import { Body, Caption, Heading } from '../components/Typography';
+import { Body, Caption } from '../components/Typography';
 import { TIMELINE_LIMIT } from '../config';
 import { GLOSSARY } from '../domain/glossary';
-import { QUALITY_INFO } from '../domain/quality';
+import { LOSS_THRESHOLDS, QUALITY_INFO, RTT_THRESHOLDS } from '../domain/quality';
 import { regionName } from '../domain/regions';
 import { useRequest } from '../hooks/useRequest';
 import { summarize } from '../lib/aggregate';
 import { formatHour, formatNumber, formatPeriod } from '../lib/format';
 import { compareModels, getTimeline } from '../services/api';
+import { goBackOrHome } from '../lib/navigation';
 import { useSelection } from '../state/SelectionContext';
 import { colors, radius, spacing } from '../theme';
+
+/** Fim das escalas dos indicadores (mesmas da tela de previsão). */
+const RTT_SCALE_MAX_MS = 200;
+const LOSS_SCALE_MAX_PCT = 8;
 
 function relative(value: number, average: number, unit: string): string {
   const diff = value - average;
@@ -33,10 +43,19 @@ export function DetalhesScreen() {
 
   if (!selectedTime) {
     return (
-      <Screen>
-        <Heading>Detalhes da previsão</Heading>
-        <Body>Escolha primeiro uma região e um período na tela de previsão.</Body>
-        <AppButton title="Escolher período" onPress={() => router.back()} />
+      <Screen
+        header={
+          <ScreenHeader
+            eyebrow="DETALHES DA PREVISÃO"
+            title="Por que esta previsão?"
+            subtitle="Para ver os detalhes, escolha antes uma região e um período."
+          />
+        }
+      >
+        <Card>
+          <Body>Escolha primeiro uma região e um período na tela de previsão.</Body>
+          <AppButton title="Escolher período" onPress={goBackOrHome} />
+        </Card>
       </Screen>
     );
   }
@@ -47,33 +66,50 @@ export function DetalhesScreen() {
   const maxRtt = summary ? Math.max(summary.maxRttMs, 1) : 1;
 
   return (
-    <Screen>
-      <Heading>Por que esta previsão?</Heading>
-      <Body>{`${regionName(probeId)} · ${formatPeriod(selectedTime)}`}</Body>
-
+    <Screen
+      header={
+        <ScreenHeader
+          eyebrow="DETALHES DA PREVISÃO"
+          title="Por que esta previsão?"
+          subtitle={`${regionName(probeId)} · ${formatPeriod(selectedTime)}`}
+        />
+      }
+    >
       {timeline.loading ? <LoadingState /> : null}
       {timeline.error ? <ErrorState message={timeline.error.userMessage} onRetry={timeline.reload} /> : null}
 
       {selected && summary ? (
         <>
-          <Card>
+          <HeroCard accent={QUALITY_INFO[selected.quality].bar}>
             <QualityBadge quality={selected.quality} large />
+            <QualityScale quality={selected.quality} />
             <Body>{QUALITY_INFO[selected.quality].summary}</Body>
-            <Caption>{`Pontuação de qualidade: ${selected.qualityScore} de 100.`}</Caption>
-          </Card>
+            <ScoreMeter score={selected.qualityScore} quality={selected.quality} />
+          </HeroCard>
 
-          <MetricCard
-            title="Latência (tempo de resposta)"
-            value={`${formatNumber(selected.predictedAvgRttMs)} ms`}
-            explanation={GLOSSARY.latencia}
-            note={relative(selected.predictedAvgRttMs, summary.avgRttMs, ' ms')}
-          />
-          <MetricCard
-            title="Perda de pacotes"
-            value={`${formatNumber(selected.predictedPacketLossPct)}%`}
-            explanation={GLOSSARY.perda}
-            note={relative(selected.predictedPacketLossPct, summary.avgLossPct, '%')}
-          />
+          <View style={styles.metrics}>
+            <MetricGauge
+              title="Latência (tempo de resposta)"
+              valueText={formatNumber(selected.predictedAvgRttMs)}
+              unit="ms"
+              value={selected.predictedAvgRttMs}
+              max={RTT_SCALE_MAX_MS}
+              thresholds={RTT_THRESHOLDS}
+              explanation={GLOSSARY.latencia}
+              note={relative(selected.predictedAvgRttMs, summary.avgRttMs, ' ms')}
+            />
+            <MetricGauge
+              title="Perda de pacotes"
+              valueText={formatNumber(selected.predictedPacketLossPct)}
+              unit="%"
+              value={selected.predictedPacketLossPct}
+              max={LOSS_SCALE_MAX_PCT}
+              thresholds={LOSS_THRESHOLDS}
+              explanation={GLOSSARY.perda}
+              note={relative(selected.predictedPacketLossPct, summary.avgLossPct, '%')}
+            />
+          </View>
+
           <MetricCard
             title="Jitter (oscilação)"
             value="Sem valor previsto"
@@ -85,30 +121,37 @@ export function DetalhesScreen() {
             <Caption>
               As barras são só um apoio visual. Todas as informações estão escritas em cada linha.
             </Caption>
-            {items.map((item) => {
-              const info = QUALITY_INFO[item.quality];
-              const isSelected = item.predictionFor === selectedTime;
-              const text = `${formatHour(item.predictionFor)}: ${info.label}, latência ${formatNumber(item.predictedAvgRttMs)} ms, perda ${formatNumber(item.predictedPacketLossPct)}%${isSelected ? ' (período escolhido)' : ''}`;
-              return (
-                <View key={item.predictionFor} accessible accessibilityLabel={text} style={styles.row}>
-                  <Text style={[styles.rowText, isSelected && styles.rowSelected]}>
-                    {`${isSelected ? '▶ ' : ''}${formatHour(item.predictionFor)} · ${info.symbol} ${info.label} · ${formatNumber(item.predictedAvgRttMs)} ms · ${formatNumber(item.predictedPacketLossPct)}%`}
-                  </Text>
+            <View style={styles.list}>
+              {items.map((item) => {
+                const info = QUALITY_INFO[item.quality];
+                const isSelected = item.predictionFor === selectedTime;
+                const text = `${formatHour(item.predictionFor)}: ${info.label}, latência ${formatNumber(item.predictedAvgRttMs)} ms, perda ${formatNumber(item.predictedPacketLossPct)}%${isSelected ? ' (período escolhido)' : ''}`;
+                return (
                   <View
-                    accessibilityElementsHidden
-                    importantForAccessibility="no-hide-descendants"
-                    style={styles.track}
+                    key={item.predictionFor}
+                    accessible
+                    accessibilityLabel={text}
+                    style={[styles.row, isSelected && styles.rowSelected]}
                   >
+                    <Text style={[styles.rowText, isSelected && styles.rowTextSelected]}>
+                      {`${isSelected ? '▶ ' : ''}${formatHour(item.predictionFor)} · ${info.symbol} ${info.label} · ${formatNumber(item.predictedAvgRttMs)} ms · ${formatNumber(item.predictedPacketLossPct)}%`}
+                    </Text>
                     <View
-                      style={[
-                        styles.bar,
-                        { width: `${Math.max(4, (item.predictedAvgRttMs / maxRtt) * 100)}%`, backgroundColor: info.fg },
-                      ]}
-                    />
+                      accessibilityElementsHidden
+                      importantForAccessibility="no-hide-descendants"
+                      style={styles.track}
+                    >
+                      <View
+                        style={[
+                          styles.bar,
+                          { width: `${Math.max(4, (item.predictedAvgRttMs / maxRtt) * 100)}%`, backgroundColor: info.bar },
+                        ]}
+                      />
+                    </View>
                   </View>
-                </View>
-              );
-            })}
+                );
+              })}
+            </View>
           </Section>
 
           <Section title="O que cada modelo prevê">
@@ -136,7 +179,7 @@ export function DetalhesScreen() {
 
           <EstimateNotice extra={`Modelo usado: ${timeline.data?.model.name ?? ''}.`} />
           <AppButton title="Ver por atividade" onPress={() => router.push('/atividade')} />
-          <AppButton title="Voltar à previsão" variant="secondary" onPress={() => router.back()} />
+          <AppButton title="Voltar à previsão" variant="secondary" onPress={goBackOrHome} />
         </>
       ) : null}
     </Screen>
@@ -144,10 +187,20 @@ export function DetalhesScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: { gap: spacing.xs, paddingVertical: spacing.xs },
+  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  list: {
+    gap: spacing.xs,
+    padding: spacing.sm,
+    borderRadius: radius,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  row: { gap: spacing.xs, paddingVertical: spacing.sm, paddingHorizontal: spacing.sm, borderRadius: radius / 2 },
+  rowSelected: { backgroundColor: colors.selectedBg },
   rowText: { fontSize: 14, lineHeight: 20, color: colors.text },
-  rowSelected: { fontWeight: '700' },
-  track: { height: 8, backgroundColor: colors.surface, borderRadius: radius, overflow: 'hidden' },
+  rowTextSelected: { fontWeight: '700' },
+  track: { height: 8, backgroundColor: colors.track, borderRadius: radius, overflow: 'hidden' },
   bar: { height: 8, borderRadius: radius },
   modelName: { fontSize: 16, fontWeight: '700', color: colors.text },
 });
