@@ -1,8 +1,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { minimumQuality, suitabilityFor } from '../src/domain/quality';
+import {
+  levelFor,
+  LOSS_THRESHOLDS,
+  minimumQuality,
+  QUALITY_INFO,
+  RTT_THRESHOLDS,
+  suitabilityFor,
+} from '../src/domain/quality';
 import { bestPeriodFor, bestWindow, summarize } from '../src/lib/aggregate';
 import { formatNumber } from '../src/lib/format';
+import { markerPercent, zoneFlex } from '../src/lib/gauge';
 import { RingBuffer } from '../src/lib/ringBuffer';
 import type { Quality, TimelineItem } from '../src/types/api';
 
@@ -79,4 +87,39 @@ test('suitabilityFor: adequada, com ressalvas e não recomendada', () => {
 test('formatNumber usa vírgula decimal', () => {
   assert.equal(formatNumber(62.64), '62,6');
   assert.equal(formatNumber(3, 0), '3');
+});
+
+test('levelFor: limiares de latência são inclusivos (60 e 150 ms)', () => {
+  assert.equal(levelFor(59.99, RTT_THRESHOLDS), 'GOOD');
+  assert.equal(levelFor(60, RTT_THRESHOLDS), 'MODERATE');
+  assert.equal(levelFor(149.99, RTT_THRESHOLDS), 'MODERATE');
+  assert.equal(levelFor(150, RTT_THRESHOLDS), 'UNSTABLE');
+});
+
+test('levelFor: limiares de perda são inclusivos (1 e 5 %)', () => {
+  assert.equal(levelFor(0, LOSS_THRESHOLDS), 'GOOD');
+  assert.equal(levelFor(0.99, LOSS_THRESHOLDS), 'GOOD');
+  assert.equal(levelFor(1, LOSS_THRESHOLDS), 'MODERATE');
+  assert.equal(levelFor(4.99, LOSS_THRESHOLDS), 'MODERATE');
+  assert.equal(levelFor(5, LOSS_THRESHOLDS), 'UNSTABLE');
+});
+
+test('markerPercent limita o marcador às pontas e ignora valores inválidos', () => {
+  assert.equal(markerPercent(100, 200), 50);
+  assert.equal(markerPercent(-5, 200), 0);
+  assert.equal(markerPercent(500, 200), 100);
+  assert.equal(markerPercent(Number.NaN, 200), 0);
+  assert.equal(markerPercent(10, 0), 0);
+});
+
+test('zoneFlex divide a escala nas faixas Boa / Regular / Instável', () => {
+  assert.deepEqual(zoneFlex(RTT_THRESHOLDS, 200), [60, 90, 50]);
+  assert.deepEqual(zoneFlex(LOSS_THRESHOLDS, 8), [1, 4, 3]);
+  assert.deepEqual(zoneFlex(RTT_THRESHOLDS, 100), [60, 90, 0]);
+});
+
+test('QUALITY_INFO define cor de barra para os três níveis', () => {
+  for (const quality of ['GOOD', 'MODERATE', 'UNSTABLE'] as const) {
+    assert.match(QUALITY_INFO[quality].bar, /^#[0-9A-F]{6}$/i);
+  }
 });
