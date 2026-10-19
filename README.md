@@ -4,8 +4,9 @@ Aplicativo mobile do Projeto Integrador **Preditor de Falhas na Rede** (Centro U
 Ele consome a **Connectivity Forecast API** e mostra, em linguagem simples e com acessibilidade, a qualidade
 de conexão **prevista** para a região e o horário que o usuário escolher.
 
-> **Status:** telas P01, P02 e P03 implementadas e com o visual redesenhado (PR #3). Testado no navegador; falta validar em
-> dispositivo real com TalkBack/VoiceOver e fonte grande (ver `docs/ACESSIBILIDADE.md`).
+> **Status:** telas P01, P02 e P03 implementadas e testadas em celular Android real (Expo Go), com a API Java e com o mock.
+> TalkBack e fonte do sistema no máximo já validados; falta validar com VoiceOver no iPhone
+> (ver `docs/ACESSIBILIDADE.md`).
 
 ## Telas (protótipos do Documento de Visão)
 
