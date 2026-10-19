@@ -1,0 +1,71 @@
+# Cenarios de teste do Packet Tracer (SentinelaDeRedes.pkt)
+# No PC-SP1 (Desktop > Command Prompt), em todos os cenarios:
+#   ping -n 20 192.168.20.20
+#   tracert 192.168.20.20
+# O primeiro ping pode falhar (ARP). Repita o ping e use o segundo resultado.
+
+# Cenario 1 - Normal: nada a fazer.
+# Esperado: 0% de perda, TTL=126, tracert com 3 saltos.
+
+# Cenario 2 - Rota alterada (no R-SP):
+enable
+configure terminal
+interface g0/1
+ shutdown
+end
+# Aguarde ~30 s (OSPF reconverge).
+# Esperado: TTL=125, tracert com 4 saltos (via 10.0.1.2 e 10.0.2.2), sem perda.
+
+# Cenario 3 - Falha total (no R-SP, continuando o cenario 2):
+configure terminal
+interface g0/2
+ shutdown
+end
+# Esperado: 100% de perda ("Destination host unreachable" vindo de 192.168.10.1).
+
+# Religar tudo (no R-SP) e confirmar TTL=126 antes do proximo cenario:
+configure terminal
+interface g0/1
+ no shutdown
+interface g0/2
+ no shutdown
+end
+
+# Cenario 4 - Perda parcial.
+# 1) No R-RJ, deixe o CLI aberto em:
+enable
+configure terminal
+interface g0/0
+# 2) No PC-SP1 rode, e deixe rodando:  ping -t 192.168.20.20
+# 3) No R-RJ alterne, esperando ~5 s entre os comandos:
+ shutdown
+ no shutdown
+ shutdown
+ no shutdown
+# 4) No PC-SP1, Ctrl+C para ver o resumo. Termine SEMPRE com "no shutdown" no R-RJ.
+# Resultado obtido: 316 enviados, 264 recebidos, 52 perdidos (17% de perda).
+# (Nao use ACL "deny icmp any any echo": ela bloqueia 100% dos pings, nao uma perda parcial.)
+
+# Cenario 5 - Loop de roteamento (rede inexistente 192.168.99.0/24, OSPF continua ligado).
+# No R-SP:
+enable
+configure terminal
+ip route 192.168.99.0 255.255.255.0 10.0.0.2
+end
+# No R-RJ:
+enable
+configure terminal
+ip route 192.168.99.0 255.255.255.0 10.0.0.1
+end
+# No PC-SP1:  ping 192.168.99.1   e   tracert 192.168.99.1
+# Resultado obtido: ping 100% de perda; o tracert alterna entre 192.168.10.1 (R-SP) e o R-RJ
+# ate o limite de 30 saltos (o pacote fica indo e voltando entre os dois roteadores).
+# Limpeza (R-SP):
+configure terminal
+no ip route 192.168.99.0 255.255.255.0 10.0.0.2
+end
+# Limpeza (R-RJ):
+configure terminal
+no ip route 192.168.99.0 255.255.255.0 10.0.0.1
+end
+# Confirme no PC-SP1: ping -n 5 192.168.20.20  -> TTL=126.
