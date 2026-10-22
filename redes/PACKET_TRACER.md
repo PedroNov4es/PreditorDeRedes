@@ -165,13 +165,22 @@ No PC-SP1: `ping 192.168.99.1` e `tracert 192.168.99.1`. Limpe com `no ip route 
 
 ## 7. Validação: ocorrência real × simulador
 
-| Situação | Real (coletor Python, `status`) | Simulador (Packet Tracer) | Coincide? |
-|---|---|---|---|
-| Rede saudável | ESTÁVEL, perda 0 % | Cenário 1 | |
-| Rota diferente | ROTA ALTERADA, TTL mudou | Cenário 2 | |
-| Queda total | COM FALHA, painel vermelho | Cenário 3 | |
-| Perda parcial | EM RISCO | Cenário 4 | |
-| TTL esgotado | linha "TTL expirado em trânsito" tratada como perda | Cenário 5 | |
+Prints dos cenários em [`packet-tracer/evidencias/`](packet-tracer/evidencias/) (topologia, cenários 1 a 5).
 
-Preencha a coluna "Coincide?" com prints do `ping`/`tracert` no PT e a saída de `status` do coletor.
-Para o real, use `host-add gateway 192.168.0.1` e `host-add google 8.8.8.8`.
+**Como ler a tabela.** A coluna "Preditor (regras do coletor)" é o estado que o `classificador.py` devolve quando recebe os números medidos
+no Packet Tracer (perda, jitter RFC 3550 calculado a partir dos RTTs do print e RTT contra um baseline do cenário 1).
+A coluna "Real (coletor na rede)" é preenchida com a saída do `status` depois que o baseline de 5 dias terminar.
+
+| Situação | Simulador (Packet Tracer) | Preditor (regras do coletor) | Real (coletor na rede) | Coincide? |
+|---|---|---|---|---|
+| Rede saudável | Cenário 1: 19/20 respostas (a perda de 1 pacote é o ARP do 1º ping; repetido, 0 %), TTL=126, 3 saltos, RTT médio 17 ms, jitter 6,0 ms ([print](packet-tracer/evidencias/cenario1_normal.png)) | ESTÁVEL | _a preencher_ | Sim |
+| Rota diferente | Cenário 2: 20/20, 0 % de perda, **TTL=125**, 4 saltos via 10.0.1.2 e 10.0.2.2, RTT médio 35 ms ([print](packet-tracer/evidencias/cenario2_rota_alterada.png)) | EM RISCO nesta rajada: um único RTT de 209 ms (reconvergência do OSPF) eleva o jitter a 26 ms, acima do limite de 20 ms. Sem esse pico (RTT 26 ms, jitter 17,8 ms), o resultado é ROTA ALTERADA | _a preencher_ | Parcial (repetir o ping após a convergência) |
+| Queda total | Cenário 3: 0/20, 100 % de perda, "Destination host unreachable" de 192.168.10.1 ([print](packet-tracer/evidencias/cenario3_queda_total.png)) | COM FALHA (painel vermelho) | _a preencher_ | Sim |
+| Perda parcial | Cenário 4: 87 enviados, 65 recebidos, **26 % de perda** ([print](packet-tracer/evidencias/cenario4_perda_parcial.png)) | COM FALHA (perda acima de 2 %). A faixa "em risco" (0,5 a 2 %) não é alcançada | _a preencher_ | Sim, com a ressalva de que a perda simulada é bem maior que a faixa de risco |
+| TTL esgotado (loop) | Cenário 5: ping 100 % de perda; `tracert` alterna entre 192.168.10.1 e 10.0.0.2 por 30 saltos ([print](packet-tracer/evidencias/cenario5_loop.png)) | COM FALHA (rajada sem resposta). A causa (loop) aparece pelo `tracert`, e não pelo ping | _a preencher_ | Sim |
+
+Observações:
+
+- O Packet Tracer não modela atraso por distância nem jitter realista; a mudança de rota aparece pelo TTL e pelos saltos do `tracert`.
+- O baseline usado na coluna "Preditor" é uma suposição para a verificação (média 17,3 ms do cenário 1 e desvio de 1 ms); o baseline verdadeiro vem do coletor, depois dos 5 dias de aprendizado.
+- Para a coluna "Real": `host-add gateway <IP do gateway>` e `host-add google 8.8.8.8`, e depois `status` e `exportar`.
