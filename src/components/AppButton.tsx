@@ -3,6 +3,8 @@ import { colors, MIN_TOUCH, radius, spacing } from '../theme';
 
 interface Props {
   title: string;
+  /** Rótulo falado, quando o texto visual for abreviado (ex.: datas). Padrão: o próprio título. */
+  accessibilityLabel?: string;
   onPress: () => void;
   hint?: string;
   variant?: 'primary' | 'secondary';
@@ -10,12 +12,12 @@ interface Props {
 }
 
 /** Botão com área mínima de 48x48 dp (RNF09), papel e rótulo explícitos (RNF02). */
-export function AppButton({ title, onPress, hint, variant = 'primary', disabled = false }: Props) {
+export function AppButton({ title, accessibilityLabel, onPress, hint, variant = 'primary', disabled = false }: Props) {
   const primary = variant === 'primary';
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={title}
+      accessibilityLabel={accessibilityLabel ?? title}
       accessibilityHint={hint}
       accessibilityState={{ disabled }}
       disabled={disabled}
