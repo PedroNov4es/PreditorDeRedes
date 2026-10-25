@@ -26,7 +26,7 @@ import { regionName } from '../domain/regions';
 import { useRegions } from '../hooks/useRegions';
 import { useRequest } from '../hooks/useRequest';
 import { bestWindow, summarize } from '../lib/aggregate';
-import { formatNumber, formatPeriod } from '../lib/format';
+import { formatNumber, formatPeriod, spokenPeriod } from '../lib/format';
 import { getProbeForecast, getTimeline } from '../services/api';
 import { useSelection } from '../state/SelectionContext';
 import { colors, spacing } from '../theme';
@@ -134,8 +134,10 @@ export function PrevisaoScreen() {
             {forecast.error ? <ErrorState message={forecast.error.userMessage} onRetry={forecast.reload} /> : null}
             {forecast.data && prediction && quality ? (
               <>
-                <Caption>{`${name} · previsão para ${formatPeriod(prediction.predictionFor)}`}</Caption>
-                <QualityBadge quality={quality} large />
+                <Caption
+                  accessibilityLabel={`${name}, previsão para ${spokenPeriod(prediction.predictionFor)}`}
+                >{`${name} · previsão para ${formatPeriod(prediction.predictionFor)}`}</Caption>
+                <QualityBadge quality={quality} large includeSummary={false} />
                 <QualityScale quality={quality} />
                 <Body>{QUALITY_INFO[quality].summary}</Body>
                 <Body>{forecast.data.recommendation.message}</Body>
@@ -205,7 +207,7 @@ export function PrevisaoScreen() {
               <Text accessibilityRole="header" style={styles.cardTitle}>
                 Período escolhido
               </Text>
-              <Body>{formatPeriod(selected.predictionFor)}</Body>
+              <Body accessibilityLabel={spokenPeriod(selected.predictionFor)}>{formatPeriod(selected.predictionFor)}</Body>
               <QualityBadge quality={selected.quality} />
               <View style={styles.actions}>
                 <AppButton title="Ver detalhes da previsão" onPress={() => router.push('/detalhes')} />
@@ -226,6 +228,7 @@ export function PrevisaoScreen() {
                   key={`${item.probeId}-${item.time}`}
                   variant="secondary"
                   title={`${item.regionName} · ${formatPeriod(item.time)} · ${QUALITY_INFO[item.quality].label}`}
+                  accessibilityLabel={`${item.regionName}, ${spokenPeriod(item.time)}, qualidade ${QUALITY_INFO[item.quality].label}`}
                   onPress={() => {
                     selectRegion(item.probeId);
                     selectTime(item.time);

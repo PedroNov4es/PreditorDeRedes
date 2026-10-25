@@ -66,7 +66,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   title: { fontSize: 14, fontWeight: '700', color: colors.textMuted },
-  valueRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.xs },
+  // flexWrap: com fonte grande a unidade ('ms', '%') desce para a linha de baixo em vez de ser cortada (F4).
+  valueRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', columnGap: spacing.xs },
   value: { fontSize: 30, lineHeight: 36, fontWeight: '700', color: colors.text },
   unit: { fontSize: 16, color: colors.textMuted },
   level: {
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
-  levelText: { fontSize: 14, fontWeight: '700' },
+  levelText: { fontSize: 14, lineHeight: 20, fontWeight: '700' },
   track: {
     flexDirection: 'row',
     height: 10,

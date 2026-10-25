@@ -8,6 +8,8 @@ interface Props {
   eyebrow: string;
   title: string;
   subtitle: string;
+  /** Versão falada do subtítulo (ex.: data por extenso), quando o texto visual for abreviado. */
+  subtitleSpoken?: string;
   /** Controles que ficam dentro da faixa (ex.: seletor de região). */
   children?: ReactNode;
 }
@@ -16,14 +18,16 @@ interface Props {
  * Faixa de identidade da tela: diz o que a tela faz e abriga o controle principal.
  * Reserva espaço embaixo para o primeiro bloco do conteúdo sobrepor a faixa (ver Screen).
  */
-export function ScreenHeader({ eyebrow, title, subtitle, children }: Props) {
+export function ScreenHeader({ eyebrow, title, subtitle, subtitleSpoken, children }: Props) {
   return (
     <View style={styles.band}>
       <Text style={styles.eyebrow}>{eyebrow}</Text>
       <Text accessibilityRole="header" style={styles.title}>
         {title}
       </Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      <Text accessibilityLabel={subtitleSpoken} style={styles.subtitle}>
+        {subtitle}
+      </Text>
       {children ? <View style={styles.slot}>{children}</View> : null}
     </View>
   );
