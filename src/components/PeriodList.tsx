@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { QUALITY_INFO } from '../domain/quality';
-import { formatNumber, formatPeriod } from '../lib/format';
+import { formatNumber, formatPeriod, spokenPeriod } from '../lib/format';
 import { spacing } from '../theme';
 import type { TimelineItem } from '../types/api';
 import { ChoiceButton } from './ChoiceButton';
@@ -23,7 +23,7 @@ export function PeriodList({ items, selectedTime, onSelect }: Props) {
           <ChoiceButton
             key={item.predictionFor}
             label={`${when} — ${info.symbol}\u00A0${info.label}`}
-            accessibilityLabel={`${when}, qualidade ${info.label}. ${detail.replace('·', ',')}`}
+            accessibilityLabel={`${spokenPeriod(item.predictionFor)}, qualidade ${info.label}. ${detail.replace('·', ',')}`}
             selected={item.predictionFor === selectedTime}
             onPress={() => onSelect(item)}
           >
