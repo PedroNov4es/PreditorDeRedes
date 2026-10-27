@@ -1,0 +1,8 @@
+Host: google (8.8.8.8)
+Baseline: média 10.6 ms, desvio 8.04 ms, teto 3σ 34.72 ms (1141 rajadas)
+  2026-10-25 19:50:44  EM RISCO      painel AMARELO  Rota começando a oscilar. Perda: 0.56% | Jitter: 5.59 ms.
+  2026-10-25 19:55:44  EM RISCO      painel AMARELO  Rota começando a oscilar. Perda: 0.56% | Jitter: 0.99 ms.
+  2026-10-26 04:58:03  EM RISCO      painel AMARELO  Rota começando a oscilar. Perda: 0.56% | Jitter: 1.68 ms.
+  2026-10-26 05:03:03  EM RISCO      painel AMARELO  Rota começando a oscilar. Perda: 0.56% | Jitter: 0.73 ms.
+  2026-10-26 22:37:27  EM RISCO      painel AMARELO  Rota começando a oscilar. Perda: 0.56% | Jitter: 4.80 ms.
+Instabilidade detectada. A navegação ou jogos podem apresentar lentidão.
