@@ -1,1 +1,8 @@
 Host: gateway (192.168.1.254)
+Baseline: média 7.09 ms, desvio 7.3 ms, teto 3σ 28.99 ms (1141 rajadas)
+  2026-10-25 19:50:45  ESTÁVEL       painel VERDE    Dentro dos limites de perda e jitter (baseline em coleta).
+  2026-10-25 19:55:45  ESTÁVEL       painel VERDE    Dentro dos limites de perda e jitter (baseline em coleta).
+  2026-10-26 04:58:03  ESTÁVEL       painel VERDE    Dentro dos limites de perda e jitter (baseline em coleta).
+  2026-10-26 05:03:03  ESTÁVEL       painel VERDE    Dentro dos limites de perda e jitter (baseline em coleta).
+  2026-10-26 22:37:27  ESTÁVEL       painel VERDE    Rede dentro do padrão histórico.
+Sua conexão está excelente e estável.
