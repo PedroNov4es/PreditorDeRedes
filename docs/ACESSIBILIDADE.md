@@ -4,6 +4,7 @@ Status: **implementado no código**. Testado em celular Android real com **TalkB
 
 | Req. | O que foi feito | Onde | Status |
 |---|---|---|---|
+| RNF01 | Atendido pelo conjunto dos requisitos RNF02 a RNF13 abaixo, que cobrem os critérios da WCAG 2.2 AA aplicáveis ao app: contraste (1.4.3 e 1.4.11), uso da cor (1.4.1), redimensionar texto (1.4.4), tamanho do alvo (2.5.8), nome, função e valor (4.1.2) e mensagens de status (4.1.3). A NBR 17060 não foi auditada item a item | `theme.ts`, `components/*`, `screens/*` | parcial: sem auditoria formal item a item da NBR 17060 |
 | RNF02 | `accessibilityRole` (button, radio, radiogroup, header, alert, progressbar), rótulo, estado (`selected`, `disabled`) e valor em todo controle | `components/*` | TalkBack ok; VoiceOver ok (papel e estado falados em inglês, ver F1) |
 | RNF03 | Qualidade sempre em **texto + símbolo + cor** (✔ Boa, ! Regular, ✖ Instável). Seleção marcada por "✓", borda grossa e estado de acessibilidade. Gráfico tem alternativa em texto linha a linha. Os medidores (`MetricGauge`, `ScoreMeter`, `QualityScale`) e a faixa de períodos (`PeriodStrip`) são só reforço visual: o valor e a qualidade aparecem sempre em texto | `StatusBadge`, `ChoiceButton`, `DetalhesScreen`, `MetricGauge`, `PeriodStrip` | ok (escala de cinza conferida na P01 no iPhone) |
 | RNF04 | Contrastes calculados (WCAG): texto 15,97:1; texto secundário 8,17:1; botão primário 6,70:1; Boa 7,03:1; Regular 7,78:1; Instável 6,85:1; borda de controle ≥ 3:1 | `theme.ts`, `domain/quality.ts` | ok |
@@ -33,7 +34,7 @@ Status: **implementado no código**. Testado em celular Android real com **TalkB
 - **Ambiente:** celular Android físico, Expo Go, dados simulados (`EXPO_PUBLIC_USE_MOCK=true`), branch `release/1.0.0`.
 - **Fonte e tela no máximo (P01, P02, P03):** o teste achou quatro defeitos de corte e quebra de texto (título da barra superior, nomes da escala, datas da faixa de períodos, símbolo separado da palavra). Todos foram corrigidos no PR #6 e conferidos de novo no aparelho.
 - **TalkBack (P01, P02 e P03):** as três telas foram percorridas com o leitor de tela. Na tela inicial (P01), ao abrir a tela, o leitor já apresenta o conteúdo sozinho, sem precisar tocar em nada, e orienta o percurso pelo som. Foram observados: anúncio do carregamento ("Carregando previsão" e "Carregando períodos", lidos como barra de progresso), estado do botão de região (recolhido/expandido), opções de região lidas como botão de opção, aviso falado de previsão atualizada com a qualidade, e leitura da previsão com data, qualidade e latência em texto.
-- **Pendente:** VoiceOver (iOS), por falta de aparelho iOS (risco R10).
+- **VoiceOver (iOS):** teste concluído em 22/10/2026 (ver registro abaixo); o risco R10 foi encerrado.
 
 ### 22/10/2026: iPhone físico, VoiceOver (iOS)
 
@@ -57,4 +58,14 @@ Status: **implementado no código**. Testado em celular Android real com **TalkB
 - **F5 (baixa):** com fonte no máximo, o selo "Adequada" da P03 sofre corte leve, mas a palavra aparece inteira.
 - **Observações:** o botão de região não fala estado "recolhido" ao fechar (o nome já diz "Trocar de região"); um anúncio de previsão atualizada saiu incompleto uma vez e não se repetiu.
 - **Não verificado:** anúncio de "Carregando previsão…" com API lenta (RNF12; com falha instantânea o anúncio de erro o substitui); estado "Não recomendada" da P03 (sem período Instável nos dados simulados); item 5 do roteiro (recarregar página numa rota interna e voltar).
-- **Risco R10:** tratado para o VoiceOver. Resta repetir o carregamento com API lenta e corrigir ou aceitar F1 a F5.
+- **Risco R10:** encerrado. O teste de VoiceOver (P01, P02 e P03) foi concluído em 22/10/2026 em iPhone físico. Itens que seguem em aberto e não fazem parte do R10: repetir o carregamento com API lenta e corrigir ou aceitar F1 a F5.
+
+### 24/10/2026: correções dos defeitos F2 a F5 (código)
+
+Correções feitas no código depois do teste de 22/10. **Ainda não foram conferidas no iPhone**: precisam de novo teste em aparelho antes de serem dadas como resolvidas. `npm run typecheck` e `npm test` (13 testes) passam.
+
+- **F2 (data e hora lidas como números):** nova função `spokenPeriod` (`src/lib/format.ts`) devolve a data por extenso ("20 de agosto, 20 horas"). Passou a ser usada nos rótulos falados da P01 (previsão atual, período escolhido, consultas recentes), da lista de períodos, dos cabeçalhos da P02 e da P03 e da sugestão de melhor horário. O texto visual continua "20/08 20:00".
+- **F3 (frase falada duas vezes):** `QualityBadge` ganhou `includeSummary`. Na P01 e na P02, onde o resumo já aparece como texto logo ao lado, o selo fala só "Qualidade Boa".
+- **F4 (cortes de "ms" e "%" com fonte no máximo):** na linha do valor do `MetricGauge`, a unidade agora quebra para a linha de baixo em vez de ser cortada (`flexWrap`).
+- **F5 (corte leve do selo "Adequada"):** o selo agora tem `lineHeight` definido, `maxWidth` de 100% e o texto encolhe (`flexShrink`) em vez de ser cortado.
+- **F1 (papel e estado em inglês):** sem alteração no código. O app usa `accessibilityRole="radio"`, e é o VoiceOver que fala o papel no idioma do aparelho. Provável causa: iPhone configurado em inglês. Conferir o idioma do iPhone antes de tratar como defeito do app.

@@ -26,7 +26,7 @@ import { regionName } from '../domain/regions';
 import { useRegions } from '../hooks/useRegions';
 import { useRequest } from '../hooks/useRequest';
 import { bestPeriodFor } from '../lib/aggregate';
-import { formatNumber, formatPeriod } from '../lib/format';
+import { formatNumber, formatPeriod, spokenPeriod } from '../lib/format';
 import { checkActivity, getTimeline } from '../services/api';
 import { goBackOrHome } from '../lib/navigation';
 import { useSelection } from '../state/SelectionContext';
@@ -99,6 +99,7 @@ export function AtividadeScreen() {
           eyebrow="PREVISÃO POR ATIVIDADE"
           title="O que você quer fazer?"
           subtitle={`${regionName(probeId)} · ${formatPeriod(selectedTime)}`}
+          subtitleSpoken={`${regionName(probeId)}, ${spokenPeriod(selectedTime)}`}
         />
       }
     >
@@ -159,7 +160,7 @@ export function AtividadeScreen() {
             {best && best.predictionFor !== selectedTime ? (
               <View style={styles.suggestion}>
                 <Text style={styles.suggestionTitle}>Melhor horário para esta atividade</Text>
-                <Body>
+                <Body accessibilityLabel={`${spokenPeriod(best.predictionFor)}, qualidade ${QUALITY_INFO[best.quality].label}.`}>
                   {`${formatPeriod(best.predictionFor)} (${QUALITY_INFO[best.quality].label}).`}
                 </Body>
                 <AppButton

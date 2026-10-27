@@ -19,7 +19,7 @@ import { LOSS_THRESHOLDS, QUALITY_INFO, RTT_THRESHOLDS } from '../domain/quality
 import { regionName } from '../domain/regions';
 import { useRequest } from '../hooks/useRequest';
 import { summarize } from '../lib/aggregate';
-import { formatHour, formatNumber, formatPeriod } from '../lib/format';
+import { formatHour, formatNumber, formatPeriod, spokenPeriod } from '../lib/format';
 import { compareModels, getTimeline } from '../services/api';
 import { goBackOrHome } from '../lib/navigation';
 import { useSelection } from '../state/SelectionContext';
@@ -72,6 +72,7 @@ export function DetalhesScreen() {
           eyebrow="DETALHES DA PREVISÃO"
           title="Por que esta previsão?"
           subtitle={`${regionName(probeId)} · ${formatPeriod(selectedTime)}`}
+          subtitleSpoken={`${regionName(probeId)}, ${spokenPeriod(selectedTime)}`}
         />
       }
     >
@@ -81,7 +82,7 @@ export function DetalhesScreen() {
       {selected && summary ? (
         <>
           <HeroCard accent={QUALITY_INFO[selected.quality].bar}>
-            <QualityBadge quality={selected.quality} large />
+            <QualityBadge quality={selected.quality} large includeSummary={false} />
             <QualityScale quality={selected.quality} />
             <Body>{QUALITY_INFO[selected.quality].summary}</Body>
             <ScoreMeter score={selected.qualityScore} quality={selected.quality} />
