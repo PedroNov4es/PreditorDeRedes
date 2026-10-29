@@ -9,7 +9,7 @@ import {
   suitabilityFor,
 } from '../src/domain/quality';
 import { bestPeriodFor, bestWindow, summarize } from '../src/lib/aggregate';
-import { formatNumber } from '../src/lib/format';
+import { formatNumber, spokenPeriod } from '../src/lib/format';
 import { markerPercent, zoneFlex } from '../src/lib/gauge';
 import { RingBuffer } from '../src/lib/ringBuffer';
 import type { Quality, TimelineItem } from '../src/types/api';
@@ -122,4 +122,12 @@ test('QUALITY_INFO define cor de barra para os três níveis', () => {
   for (const quality of ['GOOD', 'MODERATE', 'UNSTABLE'] as const) {
     assert.match(QUALITY_INFO[quality].bar, /^#[0-9A-F]{6}$/i);
   }
+});
+
+test('spokenPeriod lê data e hora por extenso (F2)', () => {
+  const at = (h: number, m = 0) => new Date(2026, 7, 20, h, m).toISOString();
+  assert.equal(spokenPeriod(at(20)), '20 de agosto, 20 horas');
+  assert.equal(spokenPeriod(at(1)), '20 de agosto, 1 hora');
+  assert.equal(spokenPeriod(at(9, 30)), '20 de agosto, 9 horas e 30 minutos');
+  assert.equal(spokenPeriod('texto inválido'), 'texto inválido');
 });

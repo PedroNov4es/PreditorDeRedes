@@ -27,7 +27,18 @@ function Badge({ fg, bg, symbol, label, spoken, large }: Props) {
 }
 
 /** Qualidade em texto + símbolo + cor: nunca só por cor (RNF03). */
-export function QualityBadge({ quality, large = false }: { quality: Quality; large?: boolean }) {
+/**
+ * `includeSummary={false}` evita ler a frase de resumo duas vezes quando ela já aparece como texto logo ao lado (F3).
+ */
+export function QualityBadge({
+  quality,
+  large = false,
+  includeSummary = true,
+}: {
+  quality: Quality;
+  large?: boolean;
+  includeSummary?: boolean;
+}) {
   const info = QUALITY_INFO[quality];
   return (
     <Badge
@@ -35,7 +46,7 @@ export function QualityBadge({ quality, large = false }: { quality: Quality; lar
       bg={info.bg}
       symbol={info.symbol}
       label={info.label}
-      spoken={`Qualidade ${info.label}. ${info.summary}`}
+      spoken={includeSummary ? `Qualidade ${info.label}. ${info.summary}` : `Qualidade ${info.label}`}
       large={large}
     />
   );
@@ -53,14 +64,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
+    maxWidth: '100%',
     gap: spacing.sm,
     borderWidth: 2,
     borderRadius: radius,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  symbol: { fontSize: 18, fontWeight: '700' },
-  symbolLarge: { fontSize: 28 },
-  label: { fontSize: 16, fontWeight: '700' },
-  labelLarge: { fontSize: 24 },
+  symbol: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
+  symbolLarge: { fontSize: 28, lineHeight: 36 },
+  label: { flexShrink: 1, fontSize: 16, lineHeight: 22, fontWeight: '700' },
+  labelLarge: { fontSize: 24, lineHeight: 32 },
 });
