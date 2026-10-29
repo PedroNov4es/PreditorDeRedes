@@ -156,7 +156,7 @@ No PC-SP1: `ping 192.168.99.1` e `tracert 192.168.99.1`. Limpe com `no ip route 
 | 1 | Normal | 20/20 respostas, 0 % de perda, TTL=126, 3 saltos |
 | 2 | Rota alterada | 20/20 respostas, 0 % de perda, TTL=125, 4 saltos (via 10.0.1.2 e 10.0.2.2) |
 | 3 | Queda total | 0/20 respostas, 100 % de perda, "Destination host unreachable" de 192.168.10.1 |
-| 4 | Perda parcial | 264/316 respostas, 52 perdidos (17 % de perda) |
+| 4 | Perda parcial | 65/87 respostas, 22 perdidos (26 % de perda) |
 | 5 | Loop | ping 100 % de perda; tracert alterna entre R-SP e R-RJ até 30 saltos |
 
 > **Limite do simulador:** o Packet Tracer não modela atraso por distância nem jitter realista, então o RTT em ms varia pouco.
@@ -169,18 +169,20 @@ Prints dos cenários em [`packet-tracer/evidencias/`](packet-tracer/evidencias/)
 
 **Como ler a tabela.** A coluna "Preditor (regras do coletor)" é o estado que o `classificador.py` devolve quando recebe os números medidos
 no Packet Tracer (perda, jitter RFC 3550 calculado a partir dos RTTs do print e RTT contra um baseline do cenário 1).
-A coluna "Real (coletor na rede)" é preenchida com a saída do `status` depois que o baseline de 5 dias terminar.
+A coluna "Real (coletor na rede)" vem da coleta de 21/10 a 26/10/2026 (1.141 rajadas por host, baseline de 5,1 dias), reclassificada por `validacao_real.py` (saída em `dados/validacao_real.txt`).
 
 | Situação | Simulador (Packet Tracer) | Preditor (regras do coletor) | Real (coletor na rede) | Coincide? |
 |---|---|---|---|---|
-| Rede saudável | Cenário 1: 19/20 respostas (a perda de 1 pacote é o ARP do 1º ping; repetido, 0 %), TTL=126, 3 saltos, RTT médio 17 ms, jitter 6,0 ms ([print](packet-tracer/evidencias/cenario1_normal.png)) | ESTÁVEL | _a preencher_ | Sim |
-| Rota diferente | Cenário 2: 20/20, 0 % de perda, **TTL=125**, 4 saltos via 10.0.1.2 e 10.0.2.2, RTT médio 35 ms ([print](packet-tracer/evidencias/cenario2_rota_alterada.png)) | EM RISCO nesta rajada: um único RTT de 209 ms (reconvergência do OSPF) eleva o jitter a 26 ms, acima do limite de 20 ms. Sem esse pico (RTT 26 ms, jitter 17,8 ms), o resultado é ROTA ALTERADA | _a preencher_ | Parcial (repetir o ping após a convergência) |
-| Queda total | Cenário 3: 0/20, 100 % de perda, "Destination host unreachable" de 192.168.10.1 ([print](packet-tracer/evidencias/cenario3_queda_total.png)) | COM FALHA (painel vermelho) | _a preencher_ | Sim |
-| Perda parcial | Cenário 4: 87 enviados, 65 recebidos, **26 % de perda** ([print](packet-tracer/evidencias/cenario4_perda_parcial.png)) | COM FALHA (perda acima de 2 %). A faixa "em risco" (0,5 a 2 %) não é alcançada | _a preencher_ | Sim, com a ressalva de que a perda simulada é bem maior que a faixa de risco |
-| TTL esgotado (loop) | Cenário 5: ping 100 % de perda; `tracert` alterna entre 192.168.10.1 e 10.0.0.2 por 30 saltos ([print](packet-tracer/evidencias/cenario5_loop.png)) | COM FALHA (rajada sem resposta). A causa (loop) aparece pelo `tracert`, e não pelo ping | _a preencher_ | Sim |
+| Rede saudável | Cenário 1: 19/20 respostas (a perda de 1 pacote é o ARP do 1º ping; repetido, 0 %), TTL=126, 3 saltos, RTT médio 17 ms, jitter 6,0 ms ([print](packet-tracer/evidencias/cenario1_normal.png)) | ESTÁVEL | 598 de 1.141 rajadas ESTÁVEL no Google e 671 no gateway. Baseline de 5,1 dias: Google 10,6 ms (desvio 8,04), gateway 7,09 ms (desvio 7,3). TTL fixo (116 e 64). Perda total de 0,42 % e 0,33 % | Sim |
+| Rota diferente | Cenário 2: 20/20, 0 % de perda, **TTL=125**, 4 saltos via 10.0.1.2 e 10.0.2.2, RTT médio 35 ms ([print](packet-tracer/evidencias/cenario2_rota_alterada.png)) | EM RISCO nesta rajada: um único RTT de 209 ms (reconvergência do OSPF) eleva o jitter a 26 ms, acima do limite de 20 ms. Sem esse pico (RTT 26 ms, jitter 17,8 ms), o resultado é ROTA ALTERADA | TTL não mudou em 5 dias (116 e 64): não houve troca real de rota. Uma rajada ROTA ALTERADA em cada host (gateway 23/10: 29,2 ms; Google 24/10: 44,07 ms), com perda 0 % e jitter < 20 ms, isolada e sem persistir por 1 hora (sem recalibração) | Parcial: a regra é a mesma, mas faltou uma mudança real de rota para comparar |
+| Queda total | Cenário 3: 0/20, 100 % de perda, "Destination host unreachable" de 192.168.10.1 ([print](packet-tracer/evidencias/cenario3_queda_total.png)) | COM FALHA (painel vermelho) | Não ocorreu: nenhuma rajada com 100 % de perda nos 5 dias. A regra foi validada só pelo teste automatizado e pelo `demo` | Não verificado (evento não ocorreu) |
+| Perda parcial | Cenário 4: 87 enviados, 65 recebidos, **26 % de perda** ([print](packet-tracer/evidencias/cenario4_perda_parcial.png)) | COM FALHA (perda acima de 2 %). A faixa "em risco" (0,5 a 2 %) não é alcançada | Gateway: 55 rajadas com perda (máx. 13,3 %); Google: 64 (máx. 20 %). Classificadas como COM FALHA em 43 e 63 rajadas (perda na janela de 1 h ou jitter > 50 ms) e EM RISCO em 426 e 479 | Sim, a lógica coincide. A perda real (até 20 %) é menor que a simulada (26 %) |
+| TTL esgotado (loop) | Cenário 5: ping 100 % de perda; `tracert` alterna entre 192.168.10.1 e 10.0.0.2 por 30 saltos ([print](packet-tracer/evidencias/cenario5_loop.png)) | COM FALHA (rajada sem resposta). A causa (loop) aparece pelo `tracert`, e não pelo ping | Não aplicável: loop não ocorre numa rede real em funcionamento; só o simulador reproduz | N/A |
 
 Observações:
 
 - O Packet Tracer não modela atraso por distância nem jitter realista; a mudança de rota aparece pelo TTL e pelos saltos do `tracert`.
 - O baseline usado na coluna "Preditor" é uma suposição para a verificação (média 17,3 ms do cenário 1 e desvio de 1 ms); o baseline verdadeiro vem do coletor, depois dos 5 dias de aprendizado.
-- Para a coluna "Real": `host-add gateway <IP do gateway>` e `host-add google 8.8.8.8`, e depois `status` e `exportar`.
+- Para refazer a coluna "Real": `host-add gateway <IP do gateway>` e `host-add google 8.8.8.8`, depois `status` e `exportar`, e `python validacao_real.py`.
+- **Limites da coleta real.** Em 5 dias não houve queda total nem mudança de rota genuína, então esses dois cenários não têm contraparte real. Para ter uma, rode a coleta rápida (ver Uso no `README.md`) e desligue o Wi-Fi por alguns minutos.
+- **Sensibilidade.** Cerca de 40 % das rajadas reais saíram EM RISCO (426 no gateway, 479 no Google). Causas: o desvio padrão alto do baseline (7 a 8 ms) com RTT máximo de até 138 ms, e a perda medida na janela de 1 hora, em que uma única perda (0,56 %) já passa de 0,5 %. Vale comentar isso no vídeo como ponto de calibração (`--desvio-minimo`).
