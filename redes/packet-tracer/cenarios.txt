@@ -43,7 +43,7 @@ interface g0/0
  shutdown
  no shutdown
 # 4) No PC-SP1, Ctrl+C para ver o resumo. Termine SEMPRE com "no shutdown" no R-RJ.
-# Resultado obtido: 316 enviados, 264 recebidos, 52 perdidos (17% de perda).
+# Resultado obtido: 87 enviados, 65 recebidos, 22 perdidos (26% de perda), conforme o print evidencias/cenario4_perda_parcial.png.
 # (Nao use ACL "deny icmp any any echo": ela bloqueia 100% dos pings, nao uma perda parcial.)
 
 # Cenario 5 - Loop de roteamento (rede inexistente 192.168.99.0/24, OSPF continua ligado).

@@ -1,0 +1,16 @@
+== gateway: 1141 rajadas em 5.1 dias
+baseline: média 7.09 ms, desvio 7.3 ms, teto 2σ 21.69, teto 3σ 28.99
+estados: {'ESTÁVEL': 671, 'EM RISCO': 426, 'COM FALHA': 43, 'ROTA ALTERADA': 1}
+TTL observados: {64: 1141}
+rajadas com perda: 55 | maior perda numa rajada: 13.33 % | perda total: 0.33 %
+rajadas com 100 % de perda (queda total): 0
+jitter > 20 ms: 111 | jitter > 50 ms: 18
+ROTA ALTERADA em 23/10/2026: RTT 29.2 ms, jitter 15.62 ms, perda 0.0 %, TTL 64
+== google: 1141 rajadas em 5.1 dias
+baseline: média 10.6 ms, desvio 8.04 ms, teto 2σ 26.68, teto 3σ 34.72
+estados: {'ESTÁVEL': 598, 'COM FALHA': 63, 'EM RISCO': 479, 'ROTA ALTERADA': 1}
+TTL observados: {116: 1141}
+rajadas com perda: 64 | maior perda numa rajada: 20.0 % | perda total: 0.42 %
+rajadas com 100 % de perda (queda total): 0
+jitter > 20 ms: 108 | jitter > 50 ms: 25
+ROTA ALTERADA em 24/10/2026: RTT 44.07 ms, jitter 18.75 ms, perda 0.0 %, TTL 116
